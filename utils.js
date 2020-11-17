@@ -17,7 +17,7 @@ function isValidTicker(ticker) {
     return (typeof ticker === 'string' && ticker.match(/^[a-z0-9]+$/i))
 }
 
-async function isValidArticle(article) {
+function isValidArticle(article) {
     keys = ['title', 'url', 'urlToImage', 'publishedAt', 'description']
     for (let i = 0; i < keys.length; i++) {
         key = keys[i]
@@ -36,28 +36,27 @@ async function isValidArticle(article) {
         return false
     }
 
-    return await Promise.all([
+    return Promise.all([
         fetch(article['urlToImage']), // check if image url is valid
         fetch(article['url']) // check if article url is valid
-    ]).then(function(responses) {
+    ]).then(responses => {
         for (let i = 0; i < responses.length; ++i) {
-            if (response.status !== 200) {
-                console.log("Status is: " + response.status + " for " + responses[i])
-                return false
+            if (responses[i].status !== 200) {
+                return Promise.resolve(false)
             }
         }
-        return true
-    }).catch(function(error) {
+        return Promise.resolve(true)
+    }).catch(error => {
         console.log("Error occurred while validating article: ")
         console.log(article)
         console.log(error)
-        return false;
+        return Promise.resolve(false)
     })
 }
 
 function invalidTickerResponse(ticker) {
-    const message = `ticker: ${ticker} is invalid, 
-    please provide a valid ticker. Example: GOOG, AMZN, etc`;
+    const message = `ticker: '${ticker}' is invalid ` +
+        `please provide a valid ticker. Example: GOOG, AMZN, etc`;
     const error_message = { 'message': message };
     return error_message;
 }
