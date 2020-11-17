@@ -5,7 +5,8 @@ const api = require('./api')
 const app = express();
 const cors = require('cors')
 
-const port = process.env.PORT
+// Listen to the App Engine-specified port, or 8080 otherwise
+const port = process.env.PORT || 8080
 
 const apiTiingoToken = utils.readSecret("api_tiingo")
 const newsApiToken = utils.readSecret("news_api")
