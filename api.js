@@ -5,7 +5,7 @@ function fetchData(baseurl, params, parser) {
     if (params) {
         url += '?' + new URLSearchParams(params)
     }
-    fetch(url).then(apiRes => {
+    return fetch(url).then(apiRes => {
             if (apiRes.status === 200) {
                 return apiRes.json()
             } else {
@@ -18,11 +18,13 @@ function fetchData(baseurl, params, parser) {
             if (!parsedRes) {
                 let message = 'Parsing of the response from: ' + url + ' failed.'
                 throw { 'status': 500, 'message': message }
+            } else {
+                return { 'status': 200, 'message': parsedRes }
             }
         })
-        .then(parsedRes => res.send(parsedRes))
         .catch(err => {
-            res.status(err.status).send({ 'message': err.message })
+            console.log(err)
+            return err
         })
 }
 
