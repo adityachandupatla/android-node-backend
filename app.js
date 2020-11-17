@@ -12,6 +12,17 @@ const newsApiToken = utils.readSecret("news_api")
 
 app.use(cors())
 
+function appRoutes() {
+    return {
+        "outlook": "/stock/api/v1.0/outlook/aapl",
+        "summary": "/stock/api/v1.0/summary/aapl",
+        "historical": "/stock/api/v1.0/historical/aapl?startDate=2020-11-15",
+        "daily": "/stock/api/v1.0/daily/aapl?startDate=2020-11-15&resampleFreq=4min",
+        "autocomplete": "/stock/api/v1.0/search?query=a",
+        "news": "/stock/api/v1.0/news/aapl?q=aapl"
+    }
+}
+
 app.get('/stock/api/v1.0/outlook/:ticker', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     if (!utils.isValidTicker(req.params.ticker)) {
@@ -22,7 +33,9 @@ app.get('/stock/api/v1.0/outlook/:ticker', (req, res) => {
             parser.parseCompanyOutlook
         ).then(function(preparedResponse) {
             if (preparedResponse.status === 200) {
-                res.send(preparedResponse.message)
+                let data = preparedResponse.message
+                data['sampleEndpoints'] = appRoutes()
+                res.send(data)
             } else {
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
@@ -40,7 +53,9 @@ app.get('/stock/api/v1.0/summary/:ticker', (req, res) => {
             parser.parseStockSummary
         ).then(function(preparedResponse) {
             if (preparedResponse.status === 200) {
-                res.send(preparedResponse.message)
+                let data = preparedResponse.message
+                data['sampleEndpoints'] = appRoutes()
+                res.send(data)
             } else {
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
@@ -63,7 +78,9 @@ app.get('/stock/api/v1.0/historical/:ticker', (req, res) => {
             parser.parseStockInfo
         ).then(function(preparedResponse) {
             if (preparedResponse.status === 200) {
-                res.send(preparedResponse.message)
+                let data = preparedResponse.message
+                data['sampleEndpoints'] = appRoutes()
+                res.send(data)
             } else {
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
@@ -89,7 +106,9 @@ app.get('/stock/api/v1.0/daily/:ticker', (req, res) => {
             parser.parseStockInfo
         ).then(function(preparedResponse) {
             if (preparedResponse.status === 200) {
-                res.send(preparedResponse.message)
+                let data = preparedResponse.message
+                data['sampleEndpoints'] = appRoutes()
+                res.send(data)
             } else {
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
@@ -109,7 +128,9 @@ app.get('/stock/api/v1.0/search', (req, res) => {
             parser.parseSearch
         ).then(function(preparedResponse) {
             if (preparedResponse.status === 200) {
-                res.send(preparedResponse.message)
+                let data = preparedResponse.message
+                data['sampleEndpoints'] = appRoutes()
+                res.send(data)
             } else {
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
@@ -123,14 +144,16 @@ app.get('/stock/api/v1.0/news/:ticker', (req, res) => {
         res.status(404).send(utils.invalidTickerResponse(req.params.ticker));
     } else {
         api.fetchData(
-            'https://newsapi.org/v2/everything?', {
+            'https://newsapi.org/v2/everything', {
                 'apiKey': newsApiToken,
                 'q': req.params.ticker
             },
-            parser.parseSearch
+            parser.parseNews
         ).then(function(preparedResponse) {
             if (preparedResponse.status === 200) {
-                res.send(preparedResponse.message)
+                let data = preparedResponse.message
+                data['sampleEndpoints'] = appRoutes()
+                res.send(data)
             } else {
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
