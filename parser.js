@@ -2,87 +2,181 @@ const utils = require('./utils')
 
 const parseErrorMsg = '[Unable to parse]'
 
-function parseCompanyOutlook(serverResp) {
-    const requiredResponse = {}
-    if (typeof serverResp === 'object' && !Array.isArray(serverResp)) {
-        requiredResponse['parsing'] = true
-        requiredResponse['companyName'] = serverResp['name'] || parseErrorMsg
-        requiredResponse['stockTickerSymbol'] = serverResp['ticker'] || parseErrorMsg
-        requiredResponse['stockExchangeCode'] = serverResp['exchangeCode'] || parseErrorMsg
-        requiredResponse['companyStartDate'] = serverResp['startDate'] || parseErrorMsg
-        requiredResponse['description'] = serverResp['description'] || parseErrorMsg
+function parseJsonData(data, schema) {
+    const parsedData = {}
+    let errorDesc = ""
+    if (typeof data === 'object' && !Array.isArray(data)) {
+        parsedData['success'] = true
+        for (let i = 0; i < schema.length; i++) {
+            let keys = schema.key.split(".")
+            let obj = data;
+            for (let j = 0; j < keys.length; j++) {
+                if (obj[keys[j]]) {
+                    obj = obj[keys[j]]
+                } else {
+                    obj = null
+                    break
+                }
+            }
+            parsedData[schema.mappedKey] = obj
+        }
     } else {
-        requiredResponse['parsing'] = false
+        parsedData['success'] = false
+        parsedData['message'] = errorDesc
     }
-    return requiredResponse
+}
+
+function parseCompanyOutlook(serverResp) {
+    return parseJsonData(serverResp, [{
+            "key": 'name',
+            "mappedKey": 'companyName'
+        },
+        {
+            "key": 'ticker',
+            "mappedKey": 'stockTickerSymbol'
+        },
+        {
+            "key": 'exchangeCode',
+            "mappedKey": 'stockExchangeCode'
+        },
+        {
+            "key": 'startDate',
+            "mappedKey": 'companyStartDate'
+        },
+        {
+            "key": 'description',
+            "mappedKey": 'description'
+        }
+    ]);
 }
 
 function parseStockSummary(serverResp) {
-    const requiredResponse = {}
-    if (typeof serverResp === 'object' && !Array.isArray(serverResp)) {
-        requiredResponse['parsing'] = true
-        requiredResponse['stockTickerSymbol'] = serverResp['ticker'] || parseErrorMsg
-        requiredResponse['timestamp'] = serverResp['timestamp'] || parseErrorMsg
-        requiredResponse['lastPrice'] = serverResp['last'] || parseErrorMsg
-        requiredResponse['previousClosingPrice'] = serverResp['prevClose'] || parseErrorMsg
-        requiredResponse['openingPrice'] = serverResp['open'] || parseErrorMsg
-        requiredResponse['highPrice'] = serverResp['high'] || parseErrorMsg
-        requiredResponse['lowPrice'] = serverResp['low'] || parseErrorMsg
-        requiredResponse['volume'] = serverResp['volume'] || parseErrorMsg
-
-        // only available when market is available
-        requiredResponse['bidSize'] = 'bidSize' in serverResp ? serverResp['bidSize'] : parseErrorMsg
-        requiredResponse['bidPrice'] = 'bidPrice' in serverResp ? serverResp['bidPrice'] : parseErrorMsg
-        requiredResponse['askSize'] = 'askSize' in serverResp ? serverResp['askSize'] : parseErrorMsg
-        requiredResponse['askPrice'] = 'askPrice' in serverResp ? serverResp['askPrice'] : parseErrorMsg
-            // can be null even when market is open
-        requiredResponse['midPrice'] = 'mid' in serverResp ? serverResp['mid'] : parseErrorMsg
-    } else {
-        requiredResponse['parsing'] = false
+    if (!Array.isArray(serverResp) || serverResp.length == 0) {
+        return { 'success': false, 'message': 'Expected an array (of size > 0) in server response' }
     }
-    return requiredResponse
+    serverResp = serverResp[0]
+    return parseJsonData(serverResp, [{
+            "key": 'ticker',
+            "mappedKey": 'stockTickerSymbol'
+        },
+        {
+            "key": 'timestamp',
+            "mappedKey": 'timestamp'
+        },
+        {
+            "key": 'last',
+            "mappedKey": 'lastPrice'
+        },
+        {
+            "key": 'prevClose',
+            "mappedKey": 'previousClosingPrice'
+        },
+        {
+            "key": 'open',
+            "mappedKey": 'openingPrice'
+        },
+        {
+            "key": 'high',
+            "mappedKey": 'highPrice'
+        },
+        {
+            "key": 'low',
+            "mappedKey": 'lowPrice'
+        },
+        {
+            "key": 'volume',
+            "mappedKey": 'volume'
+        },
+        {
+            "key": 'bidSize',
+            "mappedKey": 'bidSize'
+        },
+        {
+            "key": 'bidPrice',
+            "mappedKey": 'bidPrice'
+        },
+        {
+            "key": 'askSize',
+            "mappedKey": 'askSize'
+        },
+        {
+            "key": 'askPrice',
+            "mappedKey": 'askPrice'
+        },
+        {
+            "key": 'mid',
+            "mappedKey": 'midPrice'
+        },
+    ]);
 }
 
 function parseStockInfo(serverResp) {
     const requiredResponse = {}
     if (Array.isArray(serverResp) && serverResp.length > 0) {
-        requiredResponse['parsing'] = true
+        requiredResponse['success'] = true
         requiredResponse['data'] = []
         for (let i = 0; i < serverResp.length; i++) {
-            historical_data = {}
-            if (serverResp[i]['date'] == null || serverResp[i]['date'] == undefined) {
+            historical_data = parseJsonData(serverResp[i], [{
+                    "key": 'date',
+                    "mappedKey": 'date'
+                },
+                {
+                    "key": 'open',
+                    "mappedKey": 'open'
+                },
+                {
+                    "key": 'high',
+                    "mappedKey": 'high'
+                },
+                {
+                    "key": 'low',
+                    "mappedKey": 'low'
+                },
+                {
+                    "key": 'close',
+                    "mappedKey": 'close'
+                },
+                {
+                    "key": 'volume',
+                    "mappedKey": 'volume'
+                },
+            ]);
+            if (!historical_data['date']) {
                 continue;
             } else {
-                historical_data['date'] = new Date(serverResp[i]['date']).getTime()
+                historical_data['date'] = new Date(historical_data['date']).getTime()
             }
-            historical_data['open'] = serverResp[i]['open'] || parseErrorMsg
-            historical_data['high'] = serverResp[i]['high'] || parseErrorMsg
-            historical_data['low'] = serverResp[i]['low'] || parseErrorMsg
-            historical_data['close'] = serverResp[i]['close'] || parseErrorMsg
-            historical_data['volume'] = serverResp[i]['volume'] || parseErrorMsg
             requiredResponse['data'].push(historical_data)
         }
     } else {
-        requiredResponse['parsing'] = false
+        requiredResponse['success'] = false
+        requiredResponse['message'] = 'Expected an array (of size > 0) in server response'
     }
     return requiredResponse
 }
 
 function parseSearch(serverResp) {
     const requiredResponse = {}
-    if (Array.isArray(serverResp)) {
-        requiredResponse['parsing'] = true
+    if (Array.isArray(serverResp) && serverResp.length > 0) {
+        requiredResponse['success'] = true
         requiredResponse['data'] = []
         for (let i = 0; i < serverResp.length; i++) {
-            if (serverResp[i]['ticker'] != null && serverResp[i]['name'] != null) {
-                suggestion = {}
-                suggestion['ticker'] = serverResp[i]['ticker']
-                suggestion['name'] = serverResp[i]['name']
+            if (serverResp[i]['ticker'] && serverResp[i]['name']) {
+                suggestion = parseJsonData(serverResp[i], [{
+                        "key": 'ticker',
+                        "mappedKey": 'ticker'
+                    },
+                    {
+                        "key": 'name',
+                        "mappedKey": 'name'
+                    }
+                ]);
                 requiredResponse['data'].push(suggestion)
             }
         }
     } else {
-        requiredResponse['parsing'] = false
+        requiredResponse['success'] = false
+        requiredResponse['message'] = 'Expected an array (of size > 0) in server response'
     }
     return requiredResponse
 }
@@ -90,23 +184,48 @@ function parseSearch(serverResp) {
 async function parseNews(serverResp) {
     const requiredResponse = {}
     if (typeof serverResp === 'object' && !Array.isArray(serverResp)) {
-        requiredResponse['parsing'] = true
-        requiredResponse['articles'] = []
-        for (let i = 0; i < serverResp['articles'].length; i++) {
-            let successful = await utils.isValidArticle(serverResp['articles'][i])
-            if (successful) {
-                article = {}
-                article['title'] = serverResp['articles'][i]['title']
-                article['articleUrl'] = serverResp['articles'][i]['url']
-                article['imageUrl'] = serverResp['articles'][i]['urlToImage']
-                article['description'] = serverResp['articles'][i]['description']
-                article['date'] = serverResp['articles'][i]['publishedAt']
-                article['source'] = serverResp['articles'][i]['source']['name']
-                requiredResponse['articles'].push(article)
+        if (Array.isArray(serverResp['articles']) &&
+            serverResp['articles'].length > 0) {
+            requiredResponse['success'] = true
+            requiredResponse['articles'] = []
+            for (let i = 0; i < serverResp['articles'].length; i++) {
+                let successful = await utils.isValidArticle(serverResp['articles'][i])
+                if (successful) {
+                    article = parseJsonData(serverResp['articles'][i], [{
+                            "key": 'title',
+                            "mappedKey": 'title'
+                        },
+                        {
+                            "key": 'url',
+                            "mappedKey": 'articleUrl'
+                        },
+                        {
+                            "key": 'urlToImage',
+                            "mappedKey": 'imageUrl'
+                        },
+                        {
+                            "key": 'description',
+                            "mappedKey": 'description'
+                        },
+                        {
+                            "key": 'publishedAt',
+                            "mappedKey": 'date'
+                        },
+                        {
+                            "key": 'source.name',
+                            "mappedKey": 'source'
+                        },
+                    ]);
+                    requiredResponse['articles'].push(article)
+                }
             }
+        } else {
+            requiredResponse['success'] = false
+            requiredResponse['message'] = 'Expected an array (of size > 0) in server response'
         }
     } else {
-        requiredResponse['parsing'] = false
+        requiredResponse['success'] = false
+        requiredResponse['message'] = 'Expected an object in server response'
     }
     return requiredResponse
 }
