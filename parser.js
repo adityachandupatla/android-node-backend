@@ -8,7 +8,7 @@ function parseJsonData(data, schema) {
     if (typeof data === 'object' && !Array.isArray(data)) {
         parsedData['success'] = true
         for (let i = 0; i < schema.length; i++) {
-            let keys = schema.key.split(".")
+            let keys = schema[i].key.split(".")
             let obj = data;
             for (let j = 0; j < keys.length; j++) {
                 if (obj[keys[j]]) {
@@ -18,12 +18,14 @@ function parseJsonData(data, schema) {
                     break
                 }
             }
-            parsedData[schema.mappedKey] = obj
+            parsedData[schema[i].mappedKey] = obj
         }
     } else {
+        errorDesc = "Expected a json object from the server response"
         parsedData['success'] = false
         parsedData['message'] = errorDesc
     }
+    return parsedData
 }
 
 function parseCompanyOutlook(serverResp) {
@@ -181,53 +183,62 @@ function parseSearch(serverResp) {
     return requiredResponse
 }
 
-async function parseNews(serverResp) {
+function parseNews(serverResp) {
     const requiredResponse = {}
     if (typeof serverResp === 'object' && !Array.isArray(serverResp)) {
         if (Array.isArray(serverResp['articles']) &&
             serverResp['articles'].length > 0) {
-            requiredResponse['success'] = true
-            requiredResponse['articles'] = []
+            const promises = []
             for (let i = 0; i < serverResp['articles'].length; i++) {
-                let successful = await utils.isValidArticle(serverResp['articles'][i])
-                if (successful) {
-                    article = parseJsonData(serverResp['articles'][i], [{
-                            "key": 'title',
-                            "mappedKey": 'title'
-                        },
-                        {
-                            "key": 'url',
-                            "mappedKey": 'articleUrl'
-                        },
-                        {
-                            "key": 'urlToImage',
-                            "mappedKey": 'imageUrl'
-                        },
-                        {
-                            "key": 'description',
-                            "mappedKey": 'description'
-                        },
-                        {
-                            "key": 'publishedAt',
-                            "mappedKey": 'date'
-                        },
-                        {
-                            "key": 'source.name',
-                            "mappedKey": 'source'
-                        },
-                    ]);
-                    requiredResponse['articles'].push(article)
-                }
+                promises.push(utils.isValidArticle(serverResp['articles'][i]))
             }
+            return Promise.all(promises)
+                .then(results => {
+                    requiredResponse['success'] = true
+                    requiredResponse['articles'] = []
+                    for (let i = 0; i < results.length; ++i) {
+                        if (results[i]) {
+                            article = parseJsonData(serverResp['articles'][i], [{
+                                    "key": 'title',
+                                    "mappedKey": 'title'
+                                },
+                                {
+                                    "key": 'url',
+                                    "mappedKey": 'articleUrl'
+                                },
+                                {
+                                    "key": 'urlToImage',
+                                    "mappedKey": 'imageUrl'
+                                },
+                                {
+                                    "key": 'description',
+                                    "mappedKey": 'description'
+                                },
+                                {
+                                    "key": 'publishedAt',
+                                    "mappedKey": 'date'
+                                },
+                                {
+                                    "key": 'source.name',
+                                    "mappedKey": 'source'
+                                },
+                            ]);
+                            delete article.success
+                            requiredResponse['articles'].push(article)
+                        }
+                    }
+                    return requiredResponse
+                })
         } else {
             requiredResponse['success'] = false
             requiredResponse['message'] = 'Expected an array (of size > 0) in server response'
+            return requiredResponse
         }
     } else {
         requiredResponse['success'] = false
         requiredResponse['message'] = 'Expected an object in server response'
+        return requiredResponse
     }
-    return requiredResponse
 }
 
 module.exports = {
