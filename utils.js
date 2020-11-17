@@ -25,24 +25,34 @@ async function isValidArticle(article) {
             return false
         }
     }
+
     // check for source property in article object
     if ((!('source' in article)) || typeof article['source'] !== 'object') {
         return false
     }
+
     // check for name property in source object (nested in article)
     if ((!('name' in article['source'])) || typeof article['source']['name'] !== 'string' || article['source']['name'] === '') {
         return false
     }
 
-    // check urls is valid
-    return await fetch(article['urlToImage'])
-        .then(apiRes => {
-            if (apiRes.status === 200) {
-                return true
-            } else {
+    return await Promise.all([
+        fetch(article['urlToImage']), // check if image url is valid
+        fetch(article['url']) // check if article url is valid
+    ]).then(function(responses) {
+        for (let i = 0; i < responses.length; ++i) {
+            if (response.status !== 200) {
+                console.log("Status is: " + response.status + " for " + responses[i])
                 return false
             }
-        })
+        }
+        return true
+    }).catch(function(error) {
+        console.log("Error occurred while validating article: ")
+        console.log(article)
+        console.log(error)
+        return false;
+    })
 }
 
 function invalidTickerResponse(ticker) {
