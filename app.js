@@ -20,7 +20,13 @@ app.get('/stock/api/v1.0/outlook/:ticker', (req, res) => {
         api.fetchData(
             'https://api.tiingo.com/tiingo/daily/' + req.params.ticker, { 'token': apiTiingoToken },
             parser.parseCompanyOutlook
-        );
+        ).then(function(preparedResponse) {
+            if (preparedResponse.status === 200) {
+                res.send(preparedResponse.message)
+            } else {
+                res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
+            }
+        })
     }
 });
 
@@ -32,7 +38,13 @@ app.get('/stock/api/v1.0/summary/:ticker', (req, res) => {
         api.fetchData(
             'https://api.tiingo.com/iex/' + req.params.ticker, { 'token': apiTiingoToken },
             parser.parseStockSummary
-        );
+        ).then(function(preparedResponse) {
+            if (preparedResponse.status === 200) {
+                res.send(preparedResponse.message)
+            } else {
+                res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
+            }
+        })
     }
 });
 
@@ -49,7 +61,13 @@ app.get('/stock/api/v1.0/historical/:ticker', (req, res) => {
                 'token': apiTiingoToken
             },
             parser.parseStockInfo
-        );
+        ).then(function(preparedResponse) {
+            if (preparedResponse.status === 200) {
+                res.send(preparedResponse.message)
+            } else {
+                res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
+            }
+        })
     }
 });
 
@@ -69,7 +87,13 @@ app.get('/stock/api/v1.0/daily/:ticker', (req, res) => {
                 'token': apiTiingoToken
             },
             parser.parseStockInfo
-        );
+        ).then(function(preparedResponse) {
+            if (preparedResponse.status === 200) {
+                res.send(preparedResponse.message)
+            } else {
+                res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
+            }
+        })
     }
 });
 
@@ -83,7 +107,13 @@ app.get('/stock/api/v1.0/search', (req, res) => {
                 'token': apiTiingoToken
             },
             parser.parseSearch
-        );
+        ).then(function(preparedResponse) {
+            if (preparedResponse.status === 200) {
+                res.send(preparedResponse.message)
+            } else {
+                res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
+            }
+        })
     }
 });
 
@@ -98,7 +128,13 @@ app.get('/stock/api/v1.0/news/:ticker', (req, res) => {
                 'q': req.params.ticker
             },
             parser.parseSearch
-        );
+        ).then(function(preparedResponse) {
+            if (preparedResponse.status === 200) {
+                res.send(preparedResponse.message)
+            } else {
+                res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
+            }
+        })
     }
 });
 
