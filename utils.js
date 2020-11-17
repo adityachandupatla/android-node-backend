@@ -45,8 +45,16 @@ async function isValidArticle(article) {
         })
 }
 
+function invalidTickerResponse(ticker) {
+    const message = `ticker: ${ticker} is invalid, 
+    please provide a valid ticker. Example: GOOG, AMZN, etc`;
+    const error_message = { 'message': message };
+    return error_message;
+}
+
 module.exports = {
     readSecret: readSecret,
     isValidTicker: isValidTicker,
-    isValidArticle: isValidArticle
+    isValidArticle: isValidArticle,
+    invalidTickerResponse: invalidTickerResponse
 }
