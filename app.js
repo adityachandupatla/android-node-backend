@@ -17,10 +17,9 @@ function appRoutes() {
     return {
         "outlook": "/stock/api/v1.0/outlook/aapl",
         "summary": "/stock/api/v1.0/summary/aapl",
-        "historical": "/stock/api/v1.0/historical/aapl?startDate=2020-11-15",
-        "daily": "/stock/api/v1.0/daily/aapl?startDate=2020-11-15&resampleFreq=4min",
+        "historical": "/stock/api/v1.0/historical/aapl",
         "autocomplete": "/stock/api/v1.0/search?query=a",
-        "news": "/stock/api/v1.0/news/aapl?q=aapl"
+        "news": "/stock/api/v1.0/news/aapl"
     }
 }
 
@@ -68,40 +67,11 @@ app.get('/stock/api/v1.0/historical/:ticker', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     if (!utils.isValidTicker(req.params.ticker)) {
         res.status(404).send(utils.invalidTickerResponse(req.params.ticker));
-    } else if (!('startDate' in req.query)) {
-        res.status(404).send({ 'message': 'expected startDate query parameter' })
     } else {
+        let twoYearAgoDate = utils.formatDate(new Date().setFullYear(new Date().getFullYear() - 2));
         api.fetchData(
             'https://api.tiingo.com/tiingo/daily/' + req.params.ticker + '/prices', {
-                'startDate': req.query.startDate,
-                'token': apiTiingoToken
-            },
-            parser.parseStockInfo
-        ).then(function(preparedResponse) {
-            if (preparedResponse.status === 200) {
-                let data = preparedResponse.message
-                data['sampleEndpoints'] = appRoutes()
-                res.send(data)
-            } else {
-                res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
-            }
-        })
-    }
-});
-
-app.get('/stock/api/v1.0/daily/:ticker', (req, res) => {
-    res.setHeader('Content-Type', 'application/json')
-    if (!utils.isValidTicker(req.params.ticker)) {
-        res.status(404).send(utils.invalidTickerResponse(req.params.ticker));
-    } else if (!('startDate' in req.query)) {
-        res.status(404).send({ 'message': 'expected startDate query parameter' })
-    } else if (!('resampleFreq' in req.query)) {
-        res.status(404).send({ 'message': 'expected resampleFreq query parameter' })
-    } else {
-        api.fetchData(
-            'https://api.tiingo.com/iex/' + req.params.ticker + '/prices', {
-                'startDate': req.query.startDate,
-                'resampleFreq': req.query.resampleFreq,
+                'startDate': twoYearAgoDate,
                 'token': apiTiingoToken
             },
             parser.parseStockInfo
