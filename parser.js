@@ -112,13 +112,28 @@ function parseStockSummary(serverResp) {
     ]);
 }
 
+function parseStockSummaryList(serverResp) {
+    const requiredResponse = {}
+    if (Array.isArray(serverResp) && serverResp.length > 0) {
+        requiredResponse['success'] = true
+        requiredResponse['data'] = []
+        for (let i = 0; i < serverResp.length; i++) {
+            requiredResponse['data'].push(parseStockSummary(serverResp[i]))
+        }
+    } else {
+        requiredResponse['success'] = false
+        requiredResponse['message'] = 'Expected an array (of size > 0) in server response'
+    }
+    return requiredResponse
+}
+
 function parseStockInfo(serverResp) {
     const requiredResponse = {}
     if (Array.isArray(serverResp) && serverResp.length > 0) {
         requiredResponse['success'] = true
         requiredResponse['data'] = []
         for (let i = 0; i < serverResp.length; i++) {
-            historical_data = parseJsonData(serverResp[i], [{
+            let historical_data = parseJsonData(serverResp[i], [{
                     "key": 'date',
                     "mappedKey": 'date'
                 },
@@ -244,6 +259,7 @@ function parseNews(serverResp) {
 module.exports = {
     parseCompanyOutlook: parseCompanyOutlook,
     parseStockSummary: parseStockSummary,
+    parseStockSummaryList: parseStockSummaryList,
     parseStockInfo: parseStockInfo,
     parseSearch: parseSearch,
     parseNews: parseNews
