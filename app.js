@@ -20,7 +20,8 @@ function appRoutes() {
         "summaryList": "/stock/api/v1.0/summary?tickers=aapl,msft",
         "historical": "/stock/api/v1.0/historical/aapl",
         "autocomplete": "/stock/api/v1.0/search?query=a",
-        "news": "/stock/api/v1.0/news/aapl"
+        "news": "/stock/api/v1.0/news/aapl",
+        "details": "/stock/api/v1.0/details/aapl"
     }
 }
 
@@ -173,5 +174,62 @@ app.get('/stock/api/v1.0/news/:ticker', (req, res) => {
         })
     }
 });
+
+app.get('/stock/api/v1.0/details/:ticker', (req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    if (!utils.isValidTicker(req.params.ticker)) {
+        console.log("[ERROR]: invalid ticker: " + req.params.ticker + " at details endpoint")
+        res.status(404).send(utils.invalidTickerResponse(req.params.ticker));
+    } else {
+        Promise.all([
+            api.fetchData(
+                'https://api.tiingo.com/tiingo/daily/' + req.params.ticker, { 'token': apiTiingoToken },
+                parser.parseCompanyOutlook
+            ),
+            api.fetchData(
+                'https://api.tiingo.com/iex/' + req.params.ticker, { 'token': apiTiingoToken },
+                parser.parseStockSummary
+            ),
+            api.fetchData(
+                'https://newsapi.org/v2/everything', {
+                    'apiKey': newsApiToken,
+                    'q': req.params.ticker
+                },
+                parser.parseNews
+            )
+        ]).then(responses => {
+            outlookResponse = responses[0]
+            summaryResponse = responses[1]
+            newsResponse = responses[2]
+            cumulativeResponse = {}
+
+            if (outlookResponse.status === 200) {
+                cumulativeResponse["outlook"] = outlookResponse.message
+                console.log("[SUCCESS]: details outlook endpoint returning 200")
+            } else {
+                console.log("[ERROR]: details outlook endpoint returned " + outlookResponse.status)
+            }
+
+            if (summaryResponse.status === 200) {
+                cumulativeResponse["summary"] = summaryResponse.message
+                console.log("[SUCCESS]: details summary endpoint returning 200")
+            } else {
+                console.log("[ERROR]: details summary endpoint returned " + summaryResponse.status)
+            }
+
+            if (newsResponse.status === 200) {
+                cumulativeResponse["news"] = newsResponse.message
+                console.log("[SUCCESS]: details news endpoint returning 200")
+            } else {
+                console.log("[ERROR]: details news endpoint returned " + newsResponse.status)
+            }
+
+            cumulativeResponse['sampleEndpoints'] = appRoutes()
+            res.send(cumulativeResponse)
+        })
+    }
+});
+
+
 
 app.listen(port, () => console.log(`Listening on port ${port}...`))
