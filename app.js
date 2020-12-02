@@ -17,6 +17,7 @@ function appRoutes() {
     return {
         "outlook": "/stock/api/v1.0/outlook/aapl",
         "summary": "/stock/api/v1.0/summary/aapl",
+        "summaryList": "/stock/api/v1.0/summary?tickers=aapl,msft",
         "historical": "/stock/api/v1.0/historical/aapl",
         "autocomplete": "/stock/api/v1.0/search?query=a",
         "news": "/stock/api/v1.0/news/aapl"
@@ -63,6 +64,32 @@ app.get('/stock/api/v1.0/summary/:ticker', (req, res) => {
                 res.send(data)
             } else {
                 console.log("[ERROR]: summary endpoint returning " + preparedResponse.status)
+                res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
+            }
+        })
+    }
+});
+
+app.get('/stock/api/v1.0/summary', (req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    if (!utils.isValidTickerList(req.query.tickers)) {
+        console.log("[ERROR]: invalid ticker list: " + req.query.tickers + " at outlook endpoint")
+        res.status(404).send(utils.invalidTickerResponse(req.query.tickers));
+    } else {
+        api.fetchData(
+            'https://api.tiingo.com/iex/', {
+                'token': apiTiingoToken,
+                'tickers': req.query.tickers
+            },
+            parser.parseStockSummaryList
+        ).then(function(preparedResponse) {
+            if (preparedResponse.status === 200) {
+                let data = preparedResponse.message
+                data['sampleEndpoints'] = appRoutes()
+                console.log("[SUCCESS]: summary wrapper endpoint returning 200")
+                res.send(data)
+            } else {
+                console.log("[ERROR]: summary wrapper endpoint returning " + preparedResponse.status)
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
         })
