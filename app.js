@@ -73,7 +73,7 @@ app.get('/stock/api/v1.0/summary/:ticker', (req, res) => {
 app.get('/stock/api/v1.0/summary', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     if (!utils.isValidTickerList(req.query.tickers)) {
-        console.log("[ERROR]: invalid ticker list: " + req.query.tickers + " at outlook endpoint")
+        console.log("[ERROR]: invalid ticker list: " + req.query.tickers + " at summary wrapper endpoint")
         res.status(404).send(utils.invalidTickerResponse(req.query.tickers));
     } else {
         api.fetchData(

@@ -118,7 +118,7 @@ function parseStockSummaryList(serverResp) {
         requiredResponse['success'] = true
         requiredResponse['data'] = []
         for (let i = 0; i < serverResp.length; i++) {
-            requiredResponse['data'].push(parseStockSummary(serverResp[i]))
+            requiredResponse['data'].push(parseStockSummary([serverResp[i]]))
         }
     } else {
         requiredResponse['success'] = false
