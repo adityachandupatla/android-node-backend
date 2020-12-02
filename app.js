@@ -26,6 +26,7 @@ function appRoutes() {
 app.get('/stock/api/v1.0/outlook/:ticker', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     if (!utils.isValidTicker(req.params.ticker)) {
+        console.log("[ERROR]: invalid ticker: " + req.params.ticker + " at outlook endpoint")
         res.status(404).send(utils.invalidTickerResponse(req.params.ticker));
     } else {
         api.fetchData(
@@ -35,8 +36,10 @@ app.get('/stock/api/v1.0/outlook/:ticker', (req, res) => {
             if (preparedResponse.status === 200) {
                 let data = preparedResponse.message
                 data['sampleEndpoints'] = appRoutes()
+                console.log("[SUCCESS]: outlook endpoint returning 200")
                 res.send(data)
             } else {
+                console.log("[ERROR]: outlook endpoint returning " + preparedResponse.status)
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
         })
@@ -46,6 +49,7 @@ app.get('/stock/api/v1.0/outlook/:ticker', (req, res) => {
 app.get('/stock/api/v1.0/summary/:ticker', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     if (!utils.isValidTicker(req.params.ticker)) {
+        console.log("[ERROR]: invalid ticker: " + req.params.ticker + " at summary endpoint")
         res.status(404).send(utils.invalidTickerResponse(req.params.ticker));
     } else {
         api.fetchData(
@@ -55,8 +59,10 @@ app.get('/stock/api/v1.0/summary/:ticker', (req, res) => {
             if (preparedResponse.status === 200) {
                 let data = preparedResponse.message
                 data['sampleEndpoints'] = appRoutes()
+                console.log("[SUCCESS]: summary endpoint returning 200")
                 res.send(data)
             } else {
+                console.log("[ERROR]: summary endpoint returning " + preparedResponse.status)
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
         })
@@ -66,6 +72,7 @@ app.get('/stock/api/v1.0/summary/:ticker', (req, res) => {
 app.get('/stock/api/v1.0/historical/:ticker', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     if (!utils.isValidTicker(req.params.ticker)) {
+        console.log("[ERROR]: invalid ticker: " + req.params.ticker + " at historical endpoint")
         res.status(404).send(utils.invalidTickerResponse(req.params.ticker));
     } else {
         let twoYearAgoDate = utils.formatDate(new Date().setFullYear(new Date().getFullYear() - 2));
@@ -79,8 +86,10 @@ app.get('/stock/api/v1.0/historical/:ticker', (req, res) => {
             if (preparedResponse.status === 200) {
                 let data = preparedResponse.message
                 data['sampleEndpoints'] = appRoutes()
+                console.log("[SUCCESS]: historical endpoint returning 200")
                 res.send(data)
             } else {
+                console.log("[ERROR]: historical endpoint returning " + preparedResponse.status)
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
         })
@@ -89,6 +98,7 @@ app.get('/stock/api/v1.0/historical/:ticker', (req, res) => {
 
 app.get('/stock/api/v1.0/search', (req, res) => {
     if (!('query' in req.query)) {
+        console.log("[ERROR]: invalid ticker: " + req.params.ticker + " at search endpoint")
         res.status(404).send({ 'message': 'expected "query" query parameter' })
     } else {
         api.fetchData(
@@ -101,8 +111,10 @@ app.get('/stock/api/v1.0/search', (req, res) => {
             if (preparedResponse.status === 200) {
                 let data = preparedResponse.message
                 data['sampleEndpoints'] = appRoutes()
+                console.log("[SUCCESS]: search endpoint returning 200")
                 res.send(data)
             } else {
+                console.log("[ERROR]: search endpoint returning " + preparedResponse.status)
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
         })
@@ -112,6 +124,7 @@ app.get('/stock/api/v1.0/search', (req, res) => {
 app.get('/stock/api/v1.0/news/:ticker', (req, res) => {
     res.setHeader('Content-Type', 'application/json')
     if (!utils.isValidTicker(req.params.ticker)) {
+        console.log("[ERROR]: invalid ticker: " + req.params.ticker + " at news endpoint")
         res.status(404).send(utils.invalidTickerResponse(req.params.ticker));
     } else {
         api.fetchData(
@@ -124,8 +137,10 @@ app.get('/stock/api/v1.0/news/:ticker', (req, res) => {
             if (preparedResponse.status === 200) {
                 let data = preparedResponse.message
                 data['sampleEndpoints'] = appRoutes()
+                console.log("[SUCCESS]: news endpoint returning 200")
                 res.send(data)
             } else {
+                console.log("[ERROR]: news endpoint returning " + preparedResponse.status)
                 res.status(preparedResponse.status).send({ 'message': preparedResponse.message })
             }
         })
