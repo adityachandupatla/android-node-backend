@@ -17,6 +17,19 @@ function isValidTicker(ticker) {
     return (typeof ticker === 'string' && ticker.match(/^[a-z0-9]+$/i))
 }
 
+function isValidTickerList(tickers) {
+    if (typeof tickers === 'string') {
+        let tickerList = tickers.split(",")
+        for (let ticker in tickerList) {
+            if (!isValidTicker(ticker)) {
+                return false
+            }
+        }
+        return true
+    }
+    return false
+}
+
 function isValidArticle(article) {
     keys = ['title', 'url', 'urlToImage', 'publishedAt', 'description']
     for (let i = 0; i < keys.length; i++) {
@@ -77,6 +90,7 @@ module.exports = {
     readSecret: readSecret,
     isValidTicker: isValidTicker,
     isValidArticle: isValidArticle,
+    isValidTickerList: isValidTickerList,
     invalidTickerResponse: invalidTickerResponse,
     formatDate: formatDate
 }
