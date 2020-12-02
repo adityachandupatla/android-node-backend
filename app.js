@@ -204,21 +204,21 @@ app.get('/stock/api/v1.0/details/:ticker', (req, res) => {
             cumulativeResponse = {}
 
             if (outlookResponse.status === 200) {
-                cumulativeResponse["outlook"] = outlookResponse.message
+                cumulativeResponse["outlookModel"] = outlookResponse.message
                 console.log("[SUCCESS]: details outlook endpoint returning 200")
             } else {
                 console.log("[ERROR]: details outlook endpoint returned " + outlookResponse.status)
             }
 
             if (summaryResponse.status === 200) {
-                cumulativeResponse["summary"] = summaryResponse.message
+                cumulativeResponse["summaryModel"] = summaryResponse.message
                 console.log("[SUCCESS]: details summary endpoint returning 200")
             } else {
                 console.log("[ERROR]: details summary endpoint returned " + summaryResponse.status)
             }
 
             if (newsResponse.status === 200) {
-                cumulativeResponse["news"] = newsResponse.message
+                cumulativeResponse["newsModel"] = newsResponse.message
                 console.log("[SUCCESS]: details news endpoint returning 200")
             } else {
                 console.log("[ERROR]: details news endpoint returned " + newsResponse.status)
